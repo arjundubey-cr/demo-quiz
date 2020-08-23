@@ -1,10 +1,16 @@
 <template>
   <div id="app">
-    <Header />
+    <Header :numCorrect="numCorrect" :numTotal="numTotal" />
+
     <b-container class="bv-example-row">
       <b-row>
         <b-col sm="6" offset="3">
-          <QuestionBox :currentQuestion="questions[index]" />
+          <QuestionBox
+            v-if="questions.length"
+            :currentQuestion="questions[index]"
+            :next="next"
+            :increment="increment"
+          />
         </b-col>
       </b-row>
     </b-container>
@@ -15,7 +21,7 @@
 import Header from "./components/Header.vue";
 import QuestionBox from "./components/QuestionBox.vue";
 export default {
-  name: "App",
+  name: "app",
   components: {
     Header,
     QuestionBox,
@@ -24,11 +30,24 @@ export default {
     return {
       questions: [],
       index: 0,
+      numCorrect: 0,
+      numTotal: 0,
     };
+  },
+  methods: {
+    next() {
+      this.index++;
+    },
+    increment(isCorrect) {
+      if (isCorrect) {
+        this.numCorrect++;
+      }
+      this.numTotal++;
+    },
   },
   mounted: function () {
     fetch("https://opentdb.com/api.php?amount=10&category=27&type=multiple", {
-      method: "GET",
+      method: "get",
     })
       .then((response) => {
         return response.json();
@@ -42,7 +61,7 @@ export default {
 
 <style>
 #app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
+  font-family: "Avenir", Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
