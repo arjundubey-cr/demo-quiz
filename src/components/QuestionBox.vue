@@ -7,15 +7,19 @@
 
       <b-list-group>
         <b-list-group-item
-          v-for="(answer, index) in answers"
+          v-for="(answer, index) in shuffledAnswers"
           :key="index"
           @click="selectedAnswer(index) "
-          :class="[selectedIndex==index?'selected':'']"
+          :class="answerClass(index)"
         >{{ answer }}</b-list-group-item>
       </b-list-group>
 
-      <b-button variant="primary" @click="submitAnswer">Submit</b-button>
-      <b-button variant="success" href="#" @click="next">Next</b-button>
+      <b-button
+        variant="primary"
+        @click="submitAnswer"
+        :disabled="selectedIndex === null || answered"
+      >Submit</b-button>
+      <b-button variant="success" @click="next">Next</b-button>
     </b-jumbotron>
   </div>
 </template>
@@ -34,6 +38,8 @@ export default {
     return {
       selectedIndex: null,
       shuffledAnswers: [],
+      answered: false,
+      correctIndex: null,
     };
   },
   computed: {
@@ -49,6 +55,7 @@ export default {
       immediate: true, //immediate runs handler function every time currentQuestion is updated.
       handler() {
         this.selectedIndex = null;
+        this.answered = false;
         this.shuffleAnswers();
       },
     },
@@ -64,12 +71,34 @@ export default {
         this.currentQuestion.correct_answer,
       ];
       this.shuffledAnswers = _.shuffle(answers);
+      this.correctIndex = this.shuffledAnswers.indexOf(
+        this.currentQuestion.correct_answer
+      );
     },
 
     submitAnswer() {
       let isCorrect = false;
       if (this.selectedIndex === this.correctIndex) isCorrect = true;
+
+      this.answered = true;
+
       this.increment(isCorrect);
+    },
+
+    answerClass(index) {
+      let answerClass = "";
+      if (!this.answered && this.selectedIndex === index) {
+        answerClass = "selected";
+      } else if (this.answered && this.correctIndex === index) {
+        answerClass = "correct";
+      } else if (
+        this.answered &&
+        this.selectedIndex === index &&
+        this.correctIndex !== index
+      ) {
+        answerClass = "incorrect";
+      }
+      return answerClass;
     },
   },
 };
@@ -90,9 +119,9 @@ export default {
   background-color: lightblue;
 }
 .correct {
-  background-color: green;
+  background-color: lightgreen;
 }
 .incorrect {
-  background-color: red;
+  background-color: #ff3e4d;
 }
 </style>
